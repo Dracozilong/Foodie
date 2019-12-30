@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.imooc.mapper.OrdersMapperCustom" >
+  <resultMap id="MyOrderVo" type="com.imooc.pojo.vo.MyOrderVo" >
+    <id column="orderId" property="orderId"></id>
+    <id column="createTime" property="createTime"></id>
+    <id column="payMethod" property="payMethod"></id>
+    <id column="realPayAmount" property="realPayAmount"></id>
+    <id column="postAmount" property="postAmount"></id>
+    <id column="isComment" property="isComment"></id>
+    <id column="orderStatus" property="orderStatus"></id>
+    
+    <collection property="subOrderItemList" select="getSubItems" column="orderId" ofType="com.imooc.pojo.vo.MySubOrderItemVo" >
+      <id column="itemId" property="itemId"></id>
+      <id column="itemImg" property="itemImg"></id>
+      <id column="itemName" property="itemName"></id>
+      <id column="itemSpecName" property="itemSpecName"></id>
+      <id column="buyCounts" property="buyCounts"></id>
+      <id column="price" property="price"></id>
+    </collection>
+  </resultMap>
+  
+  <select id="queryMyOrders" resultMap="MyOrderVo" parameterType="Map">
+    SELECT
+     od.id as orderId,
+     od.created_time as createTime,
+     od.pay_method as payMethod,
+     od.real_pay_amount as realPayAmount,
+     od.post_amount as postAmount,
+     os.order_status as orderStatus
+    FROM
+     orders od
+    left JOIN
+    order_status os
+    ON
+    os.order_id = od.id
+    WHERE
+     od.is_delete = 0
+     <if test="paramsMap.orderStatus != null">
+       and os.order_status =#{paramsMap.orderStatus}
+     </if>
+    and
+    od.user_id=#{paramsMap.userId}
+    ORDER BY
+    od.updated_time ASC
+  </select>
+
+    <select id="getSubItems" parameterType="String" resultType="MySubOrderItemVo">
+        SELECT
+         oi.item_id as itemId,
+         oi.item_name as itemName,
+         oi.item_img as itemImg,
+         oi.item_spec_name as iteSpecName,
+         oi.buy_counts as buyCounts,
+         oi.price as price
+        from
+         order_items oi
+         where
+         oi.order_id =#{orderId}
+    </select>
+    <select id="queryMyOrdersDoNotUse" resultMap="MyOrderVo" parameterType="Map">
+        SELECT
+        od.id as orderId,
+        od.created_time as createTime,
+        od.pay_method as payMethod,
+        od.real_pay_amount as realPayAmount,
+        od.post_amount as postAmount,
+        os.order_status as orderStatus,
+        oi.item_id as itemId,
+        oi.item_name as itemName,
+        oi.item_img as itemImg,
+        oi.item_spec_name as iteSpecName,
+        oi.buy_counts as buyCounts,
+        oi.price as price
+        FROM
+        orders od
+        LEFT JOIN
+        order_items oi
+        ON
+        od.id=oi.order_id
+        left JOIN
+        order_status os
+        ON
+        os.order_id = od.id
+        WHERE
+        od.is_delete = 0
+        <if test="paramsMap.orderStatus != null">
+            and os.order_status =#{paramsMap.orderStatus}
+        </if>
+        and
+        od.user_id=#{paramsMap.userId}
+        ORDER BY
+        od.updated_time ASC
+    </select>
+</mapper>

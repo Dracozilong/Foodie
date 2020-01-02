@@ -102,7 +102,7 @@ public class MyOrderServiceImpl implements MyOrderService {
 
         orders.setUserId(userId);
 
-        orders.setIsDelete(YesOrNo.YES.code);
+        orders.setIsDelete(YesOrNo.NO.code);
 
         return ordersMapper.selectOne(orders);
 

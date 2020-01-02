@@ -1,5 +1,9 @@
 package com.imooc.controller;
 
+import com.imooc.pojo.Orders;
+import com.imooc.service.center.MyOrderService;
+import com.imooc.utils.IMOOCJSONResult;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import java.io.File;
@@ -13,6 +17,9 @@ public class BaseController {
 
     public static final Integer PAGE_SIZE = 10;
 
+    @Autowired
+    private MyOrderService myOrderService;
+
     // 支付中心的调用地址
     String paymentUrl = "http://payment.t.mukewang.com/foodie-payment/payment/createMerchantOrder";		// produce
 
@@ -23,4 +30,15 @@ public class BaseController {
     public static final String IMG_USER_FACE_LOCATION = "D:"+File.separator+"faces";
 
 //    public static final String IMG_USER_FACE_LOCATION = "D:\\faces";
+
+
+    public IMOOCJSONResult checkUserOrders(String userId, String orderId){
+
+        Orders order = myOrderService.queryMyorder(userId, orderId);
+
+        if (order == null){
+            IMOOCJSONResult.errorMsg("订单不存在");
+        }
+        return IMOOCJSONResult.ok(order);
+    }
 }

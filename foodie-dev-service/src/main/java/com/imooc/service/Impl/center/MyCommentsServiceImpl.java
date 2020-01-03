@@ -86,6 +86,7 @@ public class MyCommentsServiceImpl extends BaseService implements MyCommentsServ
         orderStatusMapper.updateByPrimaryKeySelective(orderStatus);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public PagedGridResult queryMyComments(String userId, Integer page, Integer pageSize) {
 

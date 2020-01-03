@@ -12,6 +12,7 @@ import com.imooc.pojo.ItemsImg;
 import com.imooc.pojo.OrderStatus;
 import com.imooc.pojo.Orders;
 import com.imooc.pojo.vo.MyOrderVo;
+import com.imooc.pojo.vo.OrderStatusCountsVo;
 import com.imooc.service.center.MyOrderService;
 import com.imooc.utils.PagedGridResult;
 import org.aspectj.weaver.ast.Or;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class MyOrderServiceImpl implements MyOrderService {
+public class MyOrderServiceImpl extends BaseService implements MyOrderService {
 
     @Autowired
     private OrdersMapperCustom ordersMapperCustom;
@@ -56,16 +57,6 @@ public class MyOrderServiceImpl implements MyOrderService {
 
         return pagedGridResult;
 
-    }
-
-    private PagedGridResult setterPagedGrid(List<?> list, Integer page){
-        PageInfo<?> pageList = new PageInfo<>(list);
-        PagedGridResult grid = new PagedGridResult();
-        grid.setPage(page);
-        grid.setRows(list);
-        grid.setTotal(pageList.getPages());
-        grid.setRecords(pageList.getTotal());
-        return grid;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -154,5 +145,53 @@ public class MyOrderServiceImpl implements MyOrderService {
         int result = ordersMapper.updateByExampleSelective(orders, example);
 
         return result==1 ?true :false;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public OrderStatusCountsVo getOrderStatusCounts(String userId) {
+
+        Map<String,Object> map = new HashMap<>();
+
+
+        map.put("userId",userId);
+
+        //查询待支付的订单
+        map.put("orderStatus",OrderStatusEnum.WAIT_PAY.type);
+        int waitPayCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        //查询代发货的订单
+        map.put("orderStatus",OrderStatusEnum.WAIT_DELIVER.type);
+        int waitDeliverCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        //查询待收货的订单
+        map.put("orderStatus",OrderStatusEnum.WAIT_RECEIVE.type);
+        int waitReceiveCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        //查询待评价的订单
+        map.put("orderStatus",OrderStatusEnum.SUCCESS.type);
+        map.put("isComment",YesOrNo.NO.code);
+        int waitCommentCounts = ordersMapperCustom.getMyOrderStatusCounts(map);
+
+        OrderStatusCountsVo countsVo = new OrderStatusCountsVo(waitPayCounts,waitDeliverCounts,waitReceiveCounts,waitCommentCounts);
+
+        return countsVo;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult getMyOrderTrend(String userId, Integer page, Integer pageSize) {
+
+        Map<String,Object> map = new HashMap<>();
+
+        map.put("userId",userId);
+
+        PageHelper.startPage(page,pageSize);
+
+        List<OrderStatus> list = ordersMapperCustom.getMyOrderTrend(map);
+
+        return setterPagedGrid(list,page);
+
+
     }
 }

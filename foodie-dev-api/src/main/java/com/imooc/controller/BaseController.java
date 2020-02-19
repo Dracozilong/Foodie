@@ -25,7 +25,11 @@ public class BaseController {
 
     //微信支付 -> 支付中心 -> 天天吃货平台
     //                      |-回调通知url
-    String payReturnUrl ="http://foodieshop.natapp1.cc/orders/notifyMerchantOrderPaid";
+    //String payReturnUrl ="http://api.zqiush.com:8088/foodie-dev-api/orders/notifyMerchantOrderPaid";
+
+    //项目采用nginx前后端分离以后，要去除端口号，交给nginx进行转发
+    String payReturnUrl ="http://api.zqiush.com/foodie-dev-api/orders/notifyMerchantOrderPaid";
+
 
     public static final String IMG_USER_FACE_LOCATION = "D:"+File.separator+"faces";
 

@@ -8,15 +8,19 @@ import com.imooc.pojo.vo.NewItemsVo;
 import com.imooc.service.CarouselService;
 import com.imooc.service.CategoryService;
 import com.imooc.utils.IMOOCJSONResult;
+import com.imooc.utils.JsonUtils;
+import com.imooc.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -30,6 +34,9 @@ public class IndexController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private RedisOperator redisOperator;
+
 
     /**
      * 查询轮播图所需要数据
@@ -40,8 +47,16 @@ public class IndexController {
     public IMOOCJSONResult carousel(){
 
        //查询轮播图所需要数据
-        List<Carousel> list = carouselService.queryAll(YesOrNo.YES.code);
-
+        List<Carousel> list = new ArrayList<>();
+        String carouselStr = redisOperator.get("carousel");
+        //判断redis中是否存在carousel的键
+        if (StringUtils.isBlank(carouselStr)){
+            //查询的list放入redis缓存
+             list = carouselService.queryAll(YesOrNo.YES.code);
+             redisOperator.set("carousel", JsonUtils.objectToJson(list));
+        }else {
+             list = JsonUtils.jsonToList(carouselStr,Carousel.class);
+        }
         return IMOOCJSONResult.ok(list);
     }
 

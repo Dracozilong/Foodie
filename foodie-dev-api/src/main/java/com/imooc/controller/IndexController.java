@@ -48,6 +48,7 @@ public class IndexController {
 
        //查询轮播图所需要数据
         List<Carousel> list = new ArrayList<>();
+
         String carouselStr = redisOperator.get("carousel");
         //判断redis中是否存在carousel的键
         if (StringUtils.isBlank(carouselStr)){
@@ -65,7 +66,16 @@ public class IndexController {
     public IMOOCJSONResult cats(){
 
         //查询商品的一级分类数据
-        List<Category> categoryList = categoryService.queryAllRootLevelCat();
+        List<Category> categoryList = new ArrayList<>();
+
+        String categoryListStr = redisOperator.get("categoryList");
+        if (StringUtils.isBlank(categoryListStr)){
+            categoryList = categoryService.queryAllRootLevelCat();
+            //查询出以及分类的数据放入redis缓存
+            redisOperator.set("categoryList",JsonUtils.objectToJson(categoryList));
+        }else {
+            categoryList=JsonUtils.jsonToList(categoryListStr,Category.class);
+        }
 
         return IMOOCJSONResult.ok(categoryList);
     }
@@ -84,9 +94,19 @@ public class IndexController {
         if (rootCatId ==null){
           return IMOOCJSONResult.errorMsg("");
       }
+        List<CategoryVo> categoryVoList = new ArrayList<>();
 
-        List<CategoryVo> list = categoryService.getSubCatList(rootCatId);
-        return IMOOCJSONResult.ok(list);
+        String categoryVoStr = redisOperator.get("CategoryVo");
+
+        if (StringUtils.isBlank(categoryVoStr)){
+            categoryVoList = categoryService.getSubCatList(rootCatId);
+            //商品子分类存入redis
+            redisOperator.set("CategoryVo",JsonUtils.objectToJson(categoryVoList));
+        }else {
+            categoryVoList = JsonUtils.jsonToList(categoryVoStr,CategoryVo.class);
+        }
+
+        return IMOOCJSONResult.ok(categoryVoList);
 
     }
 

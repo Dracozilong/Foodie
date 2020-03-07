@@ -30,8 +30,7 @@ public class ShopcartController extends BaseController {
         if (StringUtils.isBlank(userId)){
             return IMOOCJSONResult.errorMsg("");
         }
-        //TODO 前端用户在登录情况下，添加商品到购物车，会同时在后端同步购物车到redis缓存
-        //TODO 获取购物车中的商品的规格id,如果添加重复的商品 则添加数量
+
         //判断redis中是否有键为shopcart的值
         String shopcartStr = redisOperator.get(FOODIE_SHOPCART+ ":" +userId);
         List<ShopcartBO> shopcartList=null;
@@ -71,8 +70,24 @@ public class ShopcartController extends BaseController {
             return IMOOCJSONResult.errorMsg("参数不能为空");
         }
 
-        //TODO 用户在页面删除购物车中的商品数据，如果此时用户已经登录，则需要同步删除后端购物车中的商品
-
+        //从redis中获取购物车现有数据
+        String shopcartStr = redisOperator.get(FOODIE_SHOPCART + ":" + userId);
+        //判断购物车是否有数据
+        if (StringUtils.isNotBlank(shopcartStr)){
+            //购物车中存在数据
+            List<ShopcartBO> shopcartBOList = JsonUtils.jsonToList(shopcartStr, ShopcartBO.class);
+            //遍历list获取商品规格id
+            for (ShopcartBO bo : shopcartBOList) {
+                String specId = bo.getSpecId();
+                if (specId.equals(itemSpecId)){
+                    //删除商品
+                    shopcartBOList.remove(bo);
+                    break;
+                }
+            }
+            //覆盖购物车
+            redisOperator.set(FOODIE_SHOPCART+":"+userId,JsonUtils.objectToJson(shopcartBOList));
+        }
         return IMOOCJSONResult.ok();
     }
 }

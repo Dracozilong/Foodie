@@ -6,6 +6,7 @@ import com.imooc.mapper.OrderItemsMapper;
 import com.imooc.mapper.OrderStatusMapper;
 import com.imooc.mapper.OrdersMapper;
 import com.imooc.pojo.*;
+import com.imooc.pojo.bo.ShopcartBO;
 import com.imooc.pojo.bo.SubmitOrderBO;
 import com.imooc.pojo.vo.MerchantOrdersVo;
 import com.imooc.pojo.vo.OrderVo;
@@ -49,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public OrderVo createOrder(SubmitOrderBO submitOrderBO) {
+    public OrderVo createOrder(List<ShopcartBO> shopcartBOList, SubmitOrderBO submitOrderBO) {
 
         //获取userId
         String userId = submitOrderBO.getUserId();
@@ -98,11 +99,10 @@ public class OrderServiceImpl implements OrderService {
         //商品实际支付价格累计
         Integer realPayAmount =0;
 
-        //TODO 整合redis后，商品购买数量重新从redis的购物车中获取
-        int buyCounts = 1 ;
 
         for (String itemSpecId : itemSpecIdArr) {
-
+            ShopcartBO shopcartBO = getBuyCountsFromShopcart(shopcartBOList, itemSpecId);
+            int buyCounts = shopcartBO.getBuyCounts();
             //2.1根据itemSpecId查询商品价格,计算价格并保存
             ItemsSpec itemsSpec = itemservice.queryItemsBySpecId(itemSpecId);
             totalAmount+=itemsSpec.getPriceNormal()*buyCounts;
@@ -220,5 +220,16 @@ public class OrderServiceImpl implements OrderService {
         orderStatus.setOrderStatus(OrderStatusEnum.CLOSE.type);
 
         orderStatusMapper.updateByPrimaryKeySelective(orderStatus);
+    }
+
+    //从购物车中获取商品的数量
+    private ShopcartBO getBuyCountsFromShopcart(List<ShopcartBO> shopcartBOList,String itemSpecId){
+        for (ShopcartBO bo : shopcartBOList) {
+            //商品规格id相等
+            if (bo.getSpecId().equals(itemSpecId)){
+                return bo;
+            }
+        }
+        return null;
     }
 }

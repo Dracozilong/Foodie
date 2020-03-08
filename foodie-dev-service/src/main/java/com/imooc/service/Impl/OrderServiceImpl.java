@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -99,10 +100,13 @@ public class OrderServiceImpl implements OrderService {
         //商品实际支付价格累计
         Integer realPayAmount =0;
 
-
+        //创建一个待删除的List集合
+        List<ShopcartBO> toBeDeletedList = new ArrayList<>();
         for (String itemSpecId : itemSpecIdArr) {
             ShopcartBO shopcartBO = getBuyCountsFromShopcart(shopcartBOList, itemSpecId);
             int buyCounts = shopcartBO.getBuyCounts();
+            //把购物车中的商品添加到待删除的集合中
+            toBeDeletedList.add(shopcartBO);
             //2.1根据itemSpecId查询商品价格,计算价格并保存
             ItemsSpec itemsSpec = itemservice.queryItemsBySpecId(itemSpecId);
             totalAmount+=itemsSpec.getPriceNormal()*buyCounts;
@@ -159,6 +163,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderVo.setOrderId(orderId);
         orderVo.setMerchantOrdersVo(merchantOrdersVo);
+        orderVo.setShopcartBOList(toBeDeletedList);
 
         return orderVo;
     }

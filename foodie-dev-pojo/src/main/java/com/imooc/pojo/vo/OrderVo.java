@@ -1,7 +1,10 @@
 package com.imooc.pojo.vo;
 
+import com.imooc.pojo.bo.ShopcartBO;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -10,6 +13,16 @@ public class OrderVo {
     private MerchantOrdersVo merchantOrdersVo;
 
     private String orderId;
+
+    private List<ShopcartBO> shopcartBOList;
+
+    public List<ShopcartBO> getShopcartBOList() {
+        return shopcartBOList;
+    }
+
+    public void setShopcartBOList(List<ShopcartBO> shopcartBOList) {
+        this.shopcartBOList = shopcartBOList;
+    }
 
     public MerchantOrdersVo getMerchantOrdersVo() {
         return merchantOrdersVo;

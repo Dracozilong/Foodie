@@ -54,7 +54,9 @@ public class IndexController {
         if (StringUtils.isBlank(carouselStr)){
             //查询的list放入redis缓存
              list = carouselService.queryAll(YesOrNo.YES.code);
-             //例如 查询999分类，list为空，但是发起多次请求后，redis中已经保存了键值为999的空数据，所以不会一直访问后台数据库
+             //例如 查询的key在redis中不存在，对应的id在数据库中也不存在，此时被非法用户攻击，大量的请求会打在db上，造成宕机，从而影响整个系统
+             //这种现象成为缓存穿透
+             //把空的数据也缓存起来，比如空字符串，空对象，空数组或者list
              if (list!=null &&list.size()>0){
                  redisOperator.set("carousel", JsonUtils.objectToJson(list));
              }else {

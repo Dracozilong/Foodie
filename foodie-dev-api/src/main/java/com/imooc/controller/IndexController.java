@@ -54,7 +54,13 @@ public class IndexController {
         if (StringUtils.isBlank(carouselStr)){
             //查询的list放入redis缓存
              list = carouselService.queryAll(YesOrNo.YES.code);
-             redisOperator.set("carousel", JsonUtils.objectToJson(list));
+             //例如 查询999分类，list为空，但是发起多次请求后，redis中已经保存了键值为999的空数据，所以不会一直访问后台数据库
+             if (list!=null &&list.size()>0){
+                 redisOperator.set("carousel", JsonUtils.objectToJson(list));
+             }else {
+                 redisOperator.set("carousel",JsonUtils.objectToJson(list),6*50);
+             }
+
         }else {
              list = JsonUtils.jsonToList(carouselStr,Carousel.class);
         }
@@ -71,8 +77,13 @@ public class IndexController {
         String categoryListStr = redisOperator.get("categoryList");
         if (StringUtils.isBlank(categoryListStr)){
             categoryList = categoryService.queryAllRootLevelCat();
-            //查询出以及分类的数据放入redis缓存
-            redisOperator.set("categoryList",JsonUtils.objectToJson(categoryList));
+            if (categoryList!=null && categoryList.size()>0){
+                //查询出以及分类的数据放入redis缓存
+                redisOperator.set("categoryList",JsonUtils.objectToJson(categoryList));
+            }else {
+                redisOperator.set("categoryList",JsonUtils.objectToJson(categoryList),6*50);
+            }
+
         }else {
             categoryList=JsonUtils.jsonToList(categoryListStr,Category.class);
         }
@@ -101,7 +112,11 @@ public class IndexController {
         if (StringUtils.isBlank(categoryVoStr)){
             categoryVoList = categoryService.getSubCatList(rootCatId);
             //商品子分类存入redis
-            redisOperator.set("CategoryVo",JsonUtils.objectToJson(categoryVoList));
+            if (categoryVoList!=null&&categoryVoList.size()>0){
+                redisOperator.set("CategoryVo",JsonUtils.objectToJson(categoryVoList));
+            }else {
+                redisOperator.set("CategoryVo",JsonUtils.objectToJson(categoryVoList),6*50);
+            }
         }else {
             categoryVoList = JsonUtils.jsonToList(categoryVoStr,CategoryVo.class);
         }

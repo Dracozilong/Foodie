@@ -3,6 +3,7 @@ package com.imooc.controller.center;
 import com.imooc.controller.BaseController;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.center.CenterUserBO;
+import com.imooc.pojo.vo.UsersVO;
 import com.imooc.resource.FileUpload;
 import com.imooc.service.center.CenterUserService;
 import com.imooc.utils.CookieUtils;
@@ -92,7 +93,10 @@ public class CenterUserController extends BaseController {
                         String finalFacePath = fileSpace + upLoadPathPrefix+File.separator+newFileName;
 
                         //用于提供给web服务访问
+
                         upLoadPathPrefix+=("/"+newFileName);
+
+                       // upLoadPathPrefix+=(newFileName);
 
 
                         File outfile = new File(finalFacePath);
@@ -133,9 +137,12 @@ public class CenterUserController extends BaseController {
 
         Users users = centerUserService.updateUserFace(userId, finalUserFaceUrl);
 
-        Users setNullProperty = setNullProperty(users);
+        //增加令牌token，会整合进redis，分布式会话
+        UsersVO usersVO = converUsersVo(users);
+
+        //Users setNullProperty = setNullProperty(users);
         //信息存入cookie保存
-        CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(setNullProperty),true);
+        CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(usersVO),true);
 
 
         return IMOOCJSONResult.ok();
@@ -160,10 +167,13 @@ public class CenterUserController extends BaseController {
 
         Users users = centerUserService.updateUserInfo(userId, centerUserBO);
 
-        Users userproperty = setNullProperty(users);
+       // Users userproperty = setNullProperty(users);
+
+        //增加令牌token，会整合进redis，分布式会话
+        UsersVO usersVO = converUsersVo(users);
 
         //信息存入cookie保存
-        CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(userproperty),true);
+        CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(usersVO),true);
 
         return IMOOCJSONResult.ok();
     }

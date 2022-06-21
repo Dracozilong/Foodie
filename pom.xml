@@ -68,7 +68,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.16</version>
+            <version>8.0.28</version>
             <!--如果加入version号的话 yml的datasource会报错-->
         </dependency>
 <!--        <dependency>-->
